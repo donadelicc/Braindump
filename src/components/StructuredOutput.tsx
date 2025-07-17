@@ -9,7 +9,6 @@ interface CategoryOutput {
 interface StructuredOutputData {
   summary: string;
   categories: CategoryOutput[];
-  keyTakeaways: string[];
 }
 
 interface StructuredOutputProps {
@@ -25,6 +24,17 @@ const StructuredOutput: React.FC<StructuredOutputProps> = ({
   data,
   sessionData,
 }) => {
+  // Defensive checks to prevent undefined errors
+  if (!data) {
+    return (
+      <div className="w-full bg-white rounded-lg shadow-lg p-6">
+        <p className="text-red-600">Ingen data tilgjengelig</p>
+      </div>
+    );
+  }
+
+  const categories = data.categories || [];
+
   return (
     <div className="w-full bg-white rounded-lg shadow-lg p-6">
       <h2 className="text-2xl font-bold text-gray-800 mb-6">
@@ -50,7 +60,7 @@ const StructuredOutput: React.FC<StructuredOutputProps> = ({
         <h3 className="text-lg font-semibold text-gray-800 mb-2">
           📝 Sammendrag
         </h3>
-        <p className="text-gray-700">{data.summary}</p>
+        <p className="text-gray-700">{data.summary || "Ingen sammendrag tilgjengelig"}</p>
       </div>
 
       {/* Categories */}
@@ -59,7 +69,7 @@ const StructuredOutput: React.FC<StructuredOutputProps> = ({
           🎯 Kategorier og innsikter
         </h3>
         <div className="space-y-4">
-          {data.categories.map((category, index) => (
+          {categories.map((category, index) => (
             <div key={index} className="p-4 border border-gray-200 rounded-lg">
               <div className="mb-3">
                 <h4 className="font-semibold text-gray-800 text-lg">
@@ -70,28 +80,13 @@ const StructuredOutput: React.FC<StructuredOutputProps> = ({
                 </p>
               </div>
               <div className="space-y-2">
-                {category.insights.map((insight, insightIndex) => (
+                {(category.insights || []).map((insight, insightIndex) => (
                   <div key={insightIndex} className="flex items-start">
                     <span className="text-blue-500 mr-2 mt-1">•</span>
                     <p className="text-gray-700">{insight}</p>
                   </div>
                 ))}
               </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Key Takeaways */}
-      <div className="p-4 bg-green-50 rounded-lg">
-        <h3 className="text-lg font-semibold text-green-800 mb-3">
-          🚀 Viktigste lærdommer
-        </h3>
-        <div className="space-y-2">
-          {data.keyTakeaways.map((takeaway, index) => (
-            <div key={index} className="flex items-start">
-              <span className="text-green-600 mr-2 mt-1">→</span>
-              <p className="text-gray-700">{takeaway}</p>
             </div>
           ))}
         </div>

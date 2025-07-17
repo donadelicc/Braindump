@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { useReactMediaRecorder } from "react-media-recorder";
 
 interface AudioInputProps {
@@ -8,12 +8,18 @@ interface AudioInputProps {
     error: string,
   ) => void;
   onAudioReady?: (hasAudio: boolean) => void;
+  hideTranscribeButton?: boolean;
 }
 
-const AudioInput: React.FC<AudioInputProps> = ({
+export interface AudioInputRef {
+  handleTranscribe: () => Promise<void>;
+}
+
+const AudioInput = forwardRef<AudioInputRef, AudioInputProps>(({
   onTranscriptionChange,
   onAudioReady,
-}) => {
+  hideTranscribeButton = false,
+}, ref) => {
   const [activeTab, setActiveTab] = useState<"record" | "upload">("upload");
   const [isTranscribing, setIsTranscribing] = useState(false);
 
@@ -104,6 +110,11 @@ const AudioInput: React.FC<AudioInputProps> = ({
       setIsTranscribing(false);
     }
   };
+
+  // Expose handleTranscribe through ref
+  useImperativeHandle(ref, () => ({
+    handleTranscribe,
+  }));
 
   const handleDownload = () => {
     if (mediaBlobUrl) {
@@ -270,7 +281,7 @@ const AudioInput: React.FC<AudioInputProps> = ({
         </div>
 
         {/* Action buttons */}
-        {hasAudioToTranscribe() && (
+        {hasAudioToTranscribe() && !hideTranscribeButton && (
           <div className="flex gap-2 ml-auto">
             <button
               onClick={handleTranscribe}
@@ -301,9 +312,32 @@ const AudioInput: React.FC<AudioInputProps> = ({
             </button>
           </div>
         )}
+
+        {/* Clear button when hideTranscribeButton is true */}
+        {hasAudioToTranscribe() && hideTranscribeButton && (
+          <div className="flex gap-2 ml-auto">
+            {activeTab === "record" && (
+              <button
+                onClick={handleDownload}
+                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
+              >
+                Last ned
+              </button>
+            )}
+
+            <button
+              onClick={handleClear}
+              className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors"
+            >
+              Tøm
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
-};
+});
+
+AudioInput.displayName = "AudioInput";
 
 export default AudioInput;

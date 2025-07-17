@@ -1,13 +1,16 @@
 import React from "react";
 import Image from "next/image";
 import { Linkedin } from "lucide-react";
+import Link from "next/link";
 
 const Header = () => {
   return (
     <header className="py-4">
       <div className="flex justify-between items-center border-b border-deep-sea">
         <div className="flex items-center bg-transparent">
-          <Image src="/logo2.png" alt="Logo" width={75} height={50} />
+          <Link href="/">
+            <Image src="/logo2.png" alt="Logo" width={75} height={50} />
+          </Link>
         </div>
         {/* Company link on the right */}
         <div className="relative">
