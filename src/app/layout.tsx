@@ -3,6 +3,7 @@ import "./globals.css";
 import React from "react";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
+import { AuthProvider } from "../contexts/AuthContext";
 
 export const metadata: Metadata = {
   title: "Brain Dump",
@@ -20,11 +21,13 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body>
-        <div className="flex flex-col min-h-screen px-8 sm:px-12 lg:px-20 xl:px-32 2xl:px-48">
-          <Header />
-          <main className="flex-grow relative isolate">{children}</main>
-          <Footer />
-        </div>
+        <AuthProvider>
+          <div className="flex flex-col min-h-screen px-8 sm:px-12 lg:px-20 xl:px-32 2xl:px-48">
+            <Header />
+            <main className="flex-grow relative isolate">{children}</main>
+            <Footer />
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );

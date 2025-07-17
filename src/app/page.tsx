@@ -1,6 +1,10 @@
+"use client";
+
 import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Home() {
+  const { user, loading } = useAuth();
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4">
       <div className="max-w-4xl mx-auto text-center">
@@ -44,10 +48,19 @@ export default function Home() {
         </div>
 
         <Link
-          href="/brain-dump"
-          className="inline-block px-12 py-4 bg-blue-600 hover:bg-blue-700 text-white text-xl font-semibold rounded-lg shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
+          href={loading ? "#" : user ? "/brain-dump" : "/login"}
+          className={`inline-block px-12 py-4 text-white text-xl font-semibold rounded-lg shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl ${
+            loading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
+          }`}
+          onClick={loading ? (e) => e.preventDefault() : undefined}
         >
-          Start DUMP
+          {loading
+            ? "Loading..."
+            : user
+              ? "Start DUMP"
+              : "Sign in to Start DUMP"}
         </Link>
       </div>
     </div>

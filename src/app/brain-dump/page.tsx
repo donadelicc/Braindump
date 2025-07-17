@@ -1,11 +1,14 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import StepIndicator from "@/components/StepIndicator";
 import SessionSetup from "@/components/SessionSetup";
 import TranscribedText from "@/components/TranscribedText";
 import StructuredOutput from "@/components/StructuredOutput";
+import { useAuth } from "@/contexts/AuthContext";
+import { sessionService } from "@/lib/sessionService";
 import type { AudioInputRef } from "@/components/AudioInput";
 
 // Dynamically import AudioInput with SSR disabled
@@ -32,6 +35,8 @@ interface BrainstormingOutput {
 }
 
 export default function BrainDump() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
   const [transcription, setTranscription] = useState<string>("");
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [transcriptionError, setTranscriptionError] = useState<string>("");
@@ -43,6 +48,13 @@ export default function BrainDump() {
   const [isStructuring, setIsStructuring] = useState(false);
   const [structuringError, setStructuringError] = useState<string>("");
   const audioInputRef = useRef<AudioInputRef>(null);
+
+  // Authentication check
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/login");
+    }
+  }, [user, loading, router]);
 
   const handleSessionComplete = (data: SessionData) => {
     setSessionData(data);
@@ -117,6 +129,22 @@ export default function BrainDump() {
     }
   };
 
+  const handleSaveSession = async (
+    sessionData: SessionData,
+    structuredOutput: BrainstormingOutput,
+  ) => {
+    if (!user) {
+      throw new Error("User not authenticated");
+    }
+
+    await sessionService.saveSession(
+      user.uid,
+      sessionData,
+      structuredOutput,
+      transcription,
+    );
+  };
+
   const handleStepNavigation = (step: number) => {
     // Allow navigation to previous steps if they have been completed
     if (step === 1) {
@@ -187,6 +215,23 @@ export default function BrainDump() {
       </div>
     ) : null;
   };
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render anything if user is not authenticated (redirect is in progress)
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center">
@@ -272,6 +317,7 @@ export default function BrainDump() {
                 <StructuredOutput
                   data={structuredOutput}
                   sessionData={sessionData}
+                  onSave={handleSaveSession}
                 />
               )}
 

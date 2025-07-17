@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 interface CategoryOutput {
   title: string;
@@ -18,12 +18,20 @@ interface StructuredOutputProps {
     description: string;
     objective: string;
   };
+  onSave?: (
+    sessionData: { name: string; description: string; objective: string },
+    structuredOutput: StructuredOutputData,
+  ) => Promise<void>;
 }
 
 const StructuredOutput: React.FC<StructuredOutputProps> = ({
   data,
   sessionData,
+  onSave,
 }) => {
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string>("");
+  const [isSaved, setIsSaved] = useState(false);
   // Defensive checks to prevent undefined errors
   if (!data) {
     return (
@@ -34,6 +42,23 @@ const StructuredOutput: React.FC<StructuredOutputProps> = ({
   }
 
   const categories = data.categories || [];
+
+  const handleSave = async () => {
+    if (!onSave) return;
+
+    setIsSaving(true);
+    setSaveError("");
+
+    try {
+      await onSave(sessionData, data);
+      setIsSaved(true);
+    } catch (error) {
+      console.error("Error saving session:", error);
+      setSaveError("Kunne ikke lagre økt. Prøv igjen.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="w-full bg-white rounded-lg shadow-lg p-6">
@@ -93,6 +118,28 @@ const StructuredOutput: React.FC<StructuredOutputProps> = ({
           ))}
         </div>
       </div>
+
+      {/* Save Button */}
+      {onSave && (
+        <div className="mt-6 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={handleSave}
+              disabled={isSaving || isSaved}
+              className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                isSaved
+                  ? "bg-green-500 text-white cursor-not-allowed"
+                  : isSaving
+                    ? "bg-gray-400 text-white cursor-not-allowed"
+                    : "bg-blue-500 hover:bg-blue-600 text-white"
+              }`}
+            >
+              {isSaved ? "✓ Lagret" : isSaving ? "Lagrer..." : "Lagre DUMP"}
+            </button>
+            {saveError && <p className="text-red-600 text-sm">{saveError}</p>}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
