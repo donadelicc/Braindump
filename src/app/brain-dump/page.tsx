@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import StepIndicator from "@/components/StepIndicator";
 import SessionSetup from "@/components/SessionSetup";
@@ -124,7 +124,7 @@ export default function BrainDump() {
 
   const renderNavigationButtons = () => {
     const buttons = [];
-    
+
     // Back button (except for step 1)
     if (currentStep > 1) {
       buttons.push(
@@ -134,7 +134,7 @@ export default function BrainDump() {
           className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors"
         >
           ← Tilbake
-        </button>
+        </button>,
       );
     }
 
@@ -147,7 +147,7 @@ export default function BrainDump() {
           className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
         >
           Fortsett til transkripsjon →
-        </button>
+        </button>,
       );
     }
 
@@ -159,22 +159,19 @@ export default function BrainDump() {
           className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
         >
           Fortsett til strukturering →
-        </button>
+        </button>,
       );
     }
 
     return buttons.length > 0 ? (
       <div className="flex justify-between items-center mt-6">
-        <div className="flex gap-2">
-          {buttons}
-        </div>
+        <div className="flex gap-2">{buttons}</div>
       </div>
     ) : null;
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center">
-      
       <div className="min-h-screen bg-gray-100 py-8 w-full">
         <div className="max-w-6xl mx-auto space-y-6">
           <StepIndicator currentStep={currentStep} />
@@ -271,4 +268,4 @@ export default function BrainDump() {
       </div>
     </div>
   );
-} 
+}

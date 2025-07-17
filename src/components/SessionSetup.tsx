@@ -38,7 +38,6 @@ const SessionSetup: React.FC<SessionSetupProps> = ({ onSessionComplete }) => {
 
   return (
     <div className="w-full max-w-2xl bg-white rounded-lg shadow-lg p-6 mx-auto">
-
       <div className="space-y-6">
         {/* Session Name */}
         <div>

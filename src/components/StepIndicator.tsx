@@ -29,11 +29,13 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => {
       <div className="relative">
         {/* Background line */}
         <div className="absolute top-6 left-0 w-full h-0.5 bg-gray-200"></div>
-        
+
         {/* Progress line */}
-        <div 
+        <div
           className="absolute top-6 left-0 h-0.5 bg-blue-500 transition-all duration-300"
-          style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
+          style={{
+            width: `${((currentStep - 1) / (steps.length - 1)) * 100}%`,
+          }}
         ></div>
 
         {/* Steps */}
