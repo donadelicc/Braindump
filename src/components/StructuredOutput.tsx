@@ -60,7 +60,9 @@ const StructuredOutput: React.FC<StructuredOutputProps> = ({
         <h3 className="text-lg font-semibold text-gray-800 mb-2">
           📝 Sammendrag
         </h3>
-        <p className="text-gray-700">{data.summary || "Ingen sammendrag tilgjengelig"}</p>
+        <p className="text-gray-700">
+          {data.summary || "Ingen sammendrag tilgjengelig"}
+        </p>
       </div>
 
       {/* Categories */}

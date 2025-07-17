@@ -249,6 +249,24 @@ export default function BrainDump() {
                 </div>
               )}
 
+              {/* Error state */}
+              {structuringError && !isStructuring && (
+                <div className="w-full bg-white rounded-lg shadow-lg p-6">
+                  <div className="p-4 bg-red-50 rounded-lg">
+                    <h3 className="font-medium text-red-800 mb-2">
+                      Struktureringsfeil:
+                    </h3>
+                    <p className="text-red-700 text-sm">{structuringError}</p>
+                    <button
+                      onClick={handleGenerateStructuredOutput}
+                      className="mt-4 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors"
+                    >
+                      Prøv igjen
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Structured Output Component */}
               {structuredOutput && sessionData && (
                 <StructuredOutput
