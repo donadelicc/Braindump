@@ -66,15 +66,12 @@ export default function Home() {
     if (isProcessing) {
       setCurrentStep(3); // Step 3: Getting transcription
     } else if (newTranscription && !error) {
-      setCurrentStep(4); // Step 4: Transcription complete, ready for structured output
+      setCurrentStep(3); // Step 3: Show transcription result
     }
   };
 
   const handleAudioReady = (audioReady: boolean) => {
     setHasAudio(audioReady);
-    if (!audioReady && sessionData) {
-      setCurrentStep(2); // Reset to step 2 if no audio but session is set up
-    }
   };
 
   const handleGenerateStructuredOutput = async () => {
@@ -82,6 +79,7 @@ export default function Home() {
 
     setIsStructuring(true);
     setStructuringError("");
+    setCurrentStep(4); // Move to step 4
 
     try {
       const response = await fetch("/api/structure", {
@@ -111,22 +109,68 @@ export default function Home() {
     }
   };
 
-  // Reset to appropriate step when everything is cleared
-  useEffect(() => {
-    if (!transcription && !isTranscribing && !transcriptionError && !hasAudio) {
-      if (sessionData) {
-        setCurrentStep(2); // Back to audio step if session is set up
-      } else {
-        setCurrentStep(1); // Back to session setup if no session
-      }
+  const handleStepNavigation = (step: number) => {
+    // Allow navigation to previous steps if they have been completed
+    if (step === 1) {
+      setCurrentStep(1);
+    } else if (step === 2 && sessionData) {
+      setCurrentStep(2);
+    } else if (step === 3 && transcription) {
+      setCurrentStep(3);
+    } else if (step === 4 && structuredOutput) {
+      setCurrentStep(4);
     }
-  }, [
-    transcription,
-    isTranscribing,
-    transcriptionError,
-    hasAudio,
-    sessionData,
-  ]);
+  };
+
+  const renderNavigationButtons = () => {
+    const buttons = [];
+    
+    // Back button (except for step 1)
+    if (currentStep > 1) {
+      buttons.push(
+        <button
+          key="back"
+          onClick={() => handleStepNavigation(currentStep - 1)}
+          className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors"
+        >
+          ← Tilbake
+        </button>
+      );
+    }
+
+    // Step-specific forward buttons
+    if (currentStep === 2 && hasAudio) {
+      buttons.push(
+        <button
+          key="to-transcribe"
+          onClick={() => setCurrentStep(3)}
+          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
+        >
+          Fortsett til transkripsjon →
+        </button>
+      );
+    }
+
+    if (currentStep === 3 && transcription && !isTranscribing) {
+      buttons.push(
+        <button
+          key="to-structure"
+          onClick={() => setCurrentStep(4)}
+          className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
+        >
+          Fortsett til strukturering →
+        </button>
+      );
+    }
+
+    return buttons.length > 0 ? (
+      <div className="flex justify-between items-center mt-6">
+        <div className="flex gap-2">
+          {buttons}
+        </div>
+      </div>
+    ) : null;
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center">
@@ -143,27 +187,33 @@ export default function Home() {
           )}
 
           {/* Step 2: Audio Input */}
-          {currentStep >= 2 && (
-            <AudioInput
-              onTranscriptionChange={handleTranscriptionChange}
-              onAudioReady={handleAudioReady}
-            />
+          {currentStep === 2 && (
+            <div className="space-y-4">
+              <AudioInput
+                onTranscriptionChange={handleTranscriptionChange}
+                onAudioReady={handleAudioReady}
+              />
+              {renderNavigationButtons()}
+            </div>
           )}
 
           {/* Step 3: Transcription Results */}
-          {currentStep >= 3 && (
-            <TranscribedText
-              transcription={transcription}
-              isTranscribing={isTranscribing}
-              error={transcriptionError}
-            />
+          {currentStep === 3 && (
+            <div className="space-y-4">
+              <TranscribedText
+                transcription={transcription}
+                isTranscribing={isTranscribing}
+                error={transcriptionError}
+              />
+              {renderNavigationButtons()}
+            </div>
           )}
 
           {/* Step 4: Structured Output */}
-          {currentStep >= 4 && transcription && sessionData && (
-            <div className="w-full space-y-4">
+          {currentStep === 4 && (
+            <div className="space-y-4">
               {/* Generate Button */}
-              {!structuredOutput && (
+              {!structuredOutput && !isStructuring && (
                 <div className="w-full bg-white rounded-lg shadow-lg p-6 text-center">
                   <h2 className="text-2xl font-bold text-gray-800 mb-4">
                     Generer strukturert utgang
@@ -174,16 +224,9 @@ export default function Home() {
                   </p>
                   <button
                     onClick={handleGenerateStructuredOutput}
-                    disabled={isStructuring}
-                    className={`px-8 py-3 rounded-lg font-medium transition-colors ${
-                      isStructuring
-                        ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                        : "bg-blue-500 hover:bg-blue-600 text-white"
-                    }`}
+                    className="px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
                   >
-                    {isStructuring
-                      ? "Genererer..."
-                      : "Generer strukturert utgang"}
+                    Generer strukturert utgang
                   </button>
                   {structuringError && (
                     <p className="mt-2 text-red-600 text-sm">
@@ -193,13 +236,37 @@ export default function Home() {
                 </div>
               )}
 
+              {/* Loading state */}
+              {isStructuring && (
+                <div className="w-full bg-white rounded-lg shadow-lg p-6 text-center">
+                  <div className="flex items-center justify-center mb-4">
+                    <div className="flex gap-1">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                      <div
+                        className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"
+                        style={{ animationDelay: "0.2s" }}
+                      ></div>
+                      <div
+                        className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"
+                        style={{ animationDelay: "0.4s" }}
+                      ></div>
+                    </div>
+                    <span className="ml-3 text-blue-600 font-medium">
+                      Genererer strukturert utgang...
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {/* Structured Output Component */}
-              {structuredOutput && (
+              {structuredOutput && sessionData && (
                 <StructuredOutput
                   data={structuredOutput}
                   sessionData={sessionData}
                 />
               )}
+
+              {renderNavigationButtons()}
             </div>
           )}
         </div>
