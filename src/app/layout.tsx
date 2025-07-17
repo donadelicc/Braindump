@@ -5,8 +5,8 @@ import Footer from "../components/Footer";
 import Header from "../components/Header";
 
 export const metadata: Metadata = {
-  title: "Juvo Template",
-  description: "Juvo MVP Template",
+  title: "Brain Dump",
+  description: "Dump your brain",
   icons: {
     icon: "/logo2.png",
   },
