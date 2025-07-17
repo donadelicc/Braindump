@@ -18,10 +18,6 @@ const TranscribedText: React.FC<TranscribedTextProps> = ({
 
   return (
     <div className="w-full mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-        Transkripsjonsresultater
-      </h2>
-
       {/* Loading state */}
       {isTranscribing && (
         <div className="flex items-center justify-center p-8">

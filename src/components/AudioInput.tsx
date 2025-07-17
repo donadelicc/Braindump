@@ -14,7 +14,7 @@ const AudioInput: React.FC<AudioInputProps> = ({
   onTranscriptionChange,
   onAudioReady,
 }) => {
-  const [activeTab, setActiveTab] = useState<"record" | "upload">("record");
+  const [activeTab, setActiveTab] = useState<"record" | "upload">("upload");
   const [isTranscribing, setIsTranscribing] = useState(false);
 
   // Recording state
