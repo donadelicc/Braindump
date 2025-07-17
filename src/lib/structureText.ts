@@ -20,9 +20,6 @@ const StructuredOutputSchema = z.object({
   categories: z
     .array(CategoryOutputSchema)
     .describe("3-6 natural categories/themes that emerged"),
-  keyTakeaways: z
-    .array(z.string())
-    .describe("3-5 most important outcomes of the session"),
 });
 
 // TypeScript types inferred from Zod schemas
@@ -44,15 +41,13 @@ const formatInstructions = `Du må svare kun med gyldig JSON. JSON-objektet du r
       "description": "string", 
       "insights": ["string", "string", ...]
     }
-  ],
-  "keyTakeaways": ["string", "string", ...]
+  ]
 }
 
 Hvor:
 - summary er et kort sammendrag på 2-3 setninger
 - categories er en liste med 3-6 kategori-objekter
 - hver kategori har en tittel, beskrivelse og liste med innsikter
-- keyTakeaways er en liste med 3-5 viktige lærdommer
 
 ALL TEKST MÅ VÆRE PÅ NORSK!`;
 
@@ -102,7 +97,7 @@ export async function structureText(
         TRANSKRIPSJON:
         {transcription}
 
-        Vennligst analyser denne sesjonen og gi en strukturert utgang PÅ NORSK.`,
+        Vennligst analyser denne sesjonen og gi en strukturert output PÅ NORSK.`,
       ],
     ]).partial({
       format_instructions: formatInstructions,
@@ -146,10 +141,6 @@ export async function structureText(
             "Vurder å kjøre analysen på nytt eller sjekke lydkvaliteten",
           ],
         },
-      ],
-      keyTakeaways: [
-        "Gå gjennom sesjonstranskripsjonen for hovedpoeng",
-        "Vurder å behandle sesjonen på nytt hvis lydkvaliteten var dårlig",
       ],
     };
   }
