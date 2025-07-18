@@ -5,7 +5,7 @@ import React, {
   useImperativeHandle,
 } from "react";
 import { useReactMediaRecorder } from "react-media-recorder";
-import { upload } from '@vercel/blob/client';
+import { upload } from "@vercel/blob/client";
 
 interface AudioInputProps {
   onTranscriptionChange: (
@@ -104,16 +104,16 @@ const AudioInput = forwardRef<AudioInputRef, AudioInputProps>(
 
       try {
         // Step 1: Upload to Vercel Blob
-        console.log('Uploading audio file to Vercel Blob...');
+        console.log("Uploading audio file to Vercel Blob...");
         const blob = await upload(fileName, audioToTranscribe, {
-          access: 'public',
-          handleUploadUrl: '/api/upload-audio',
+          access: "public",
+          handleUploadUrl: "/api/upload-audio",
           onUploadProgress: (progress) => {
             setUploadProgress(Math.round(progress.percentage));
           },
         });
 
-        console.log('Upload completed, blob URL:', blob.url);
+        console.log("Upload completed, blob URL:", blob.url);
         setIsUploading(false);
         setIsTranscribing(true);
 
@@ -121,7 +121,7 @@ const AudioInput = forwardRef<AudioInputRef, AudioInputProps>(
         const transcribeResponse = await fetch("/api/transcribe", {
           method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({ audioUrl: blob.url }),
         });
@@ -137,15 +137,15 @@ const AudioInput = forwardRef<AudioInputRef, AudioInputProps>(
       } catch (error) {
         console.error("Upload/Transcription error:", error);
         let errorMsg = "Failed to process audio. Please try again.";
-        
+
         if (error instanceof Error) {
-          if (error.message.includes('upload')) {
+          if (error.message.includes("upload")) {
             errorMsg = "Failed to upload audio file. Please try again.";
-          } else if (error.message.includes('transcribe')) {
+          } else if (error.message.includes("transcribe")) {
             errorMsg = "Failed to transcribe audio. Please try again.";
           }
         }
-        
+
         onTranscriptionChange("", false, errorMsg);
       } finally {
         setIsUploading(false);
@@ -335,12 +335,11 @@ const AudioInput = forwardRef<AudioInputRef, AudioInputProps>(
                     : "bg-green-500 hover:bg-green-600"
                 }`}
               >
-                {isUploading 
-                  ? `Laster opp... ${uploadProgress}%` 
-                  : isTranscribing 
-                  ? "Transkriberer..." 
-                  : "Transkriber"
-                }
+                {isUploading
+                  ? `Laster opp... ${uploadProgress}%`
+                  : isTranscribing
+                    ? "Transkriberer..."
+                    : "Transkriber"}
               </button>
 
               {activeTab === "record" && (

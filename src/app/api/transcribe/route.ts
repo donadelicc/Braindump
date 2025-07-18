@@ -7,9 +7,9 @@ export const maxDuration = 300; // 5 minutes for processing long audio files
 export async function POST(request: NextRequest) {
   try {
     // Check if we're receiving a blob URL or a file
-    const contentType = request.headers.get('content-type');
-    
-    if (contentType?.includes('application/json')) {
+    const contentType = request.headers.get("content-type");
+
+    if (contentType?.includes("application/json")) {
       // Handle blob URL
       const { audioUrl } = await request.json();
 
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      console.log('Fetching audio from blob URL:', audioUrl);
+      console.log("Fetching audio from blob URL:", audioUrl);
 
       // Fetch the audio file from the blob URL
       const response = await fetch(audioUrl);
@@ -29,20 +29,20 @@ export async function POST(request: NextRequest) {
       }
 
       const audioBuffer = await response.arrayBuffer();
-      const audioFile = new File([audioBuffer], 'audio.webm', { 
-        type: 'audio/webm' 
+      const audioFile = new File([audioBuffer], "audio.webm", {
+        type: "audio/webm",
       });
 
-      console.log('Audio file size:', audioBuffer.byteLength, 'bytes');
+      console.log("Audio file size:", audioBuffer.byteLength, "bytes");
 
       const transcriptionObject = await transcribeAudio(audioFile);
 
       // Clean up the blob after successful transcription
       try {
         await del(audioUrl);
-        console.log('Successfully deleted blob after transcription');
+        console.log("Successfully deleted blob after transcription");
       } catch (deleteError) {
-        console.warn('Failed to delete blob after transcription:', deleteError);
+        console.warn("Failed to delete blob after transcription:", deleteError);
         // Don't fail the request if cleanup fails
       }
 
@@ -62,7 +62,11 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      console.log('Processing direct file upload (legacy):', audioFile.size, 'bytes');
+      console.log(
+        "Processing direct file upload (legacy):",
+        audioFile.size,
+        "bytes",
+      );
 
       const transcriptionObject = await transcribeAudio(audioFile);
 
