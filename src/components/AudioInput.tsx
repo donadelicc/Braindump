@@ -5,6 +5,7 @@ import React, {
   useImperativeHandle,
 } from "react";
 import { useReactMediaRecorder } from "react-media-recorder";
+import { upload } from '@vercel/blob/client';
 
 interface AudioInputProps {
   onTranscriptionChange: (
@@ -27,6 +28,8 @@ const AudioInput = forwardRef<AudioInputRef, AudioInputProps>(
   ) => {
     const [activeTab, setActiveTab] = useState<"record" | "upload">("upload");
     const [isTranscribing, setIsTranscribing] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     // Recording state
     const {
@@ -82,26 +85,45 @@ const AudioInput = forwardRef<AudioInputRef, AudioInputProps>(
 
     const handleTranscribe = async () => {
       let audioToTranscribe: Blob | File | null = null;
+      let fileName = "audio.webm";
 
       if (activeTab === "record" && mediaBlobUrl) {
         const response = await fetch(mediaBlobUrl);
         audioToTranscribe = await response.blob();
+        fileName = "recorded-audio.webm";
       } else if (activeTab === "upload" && selectedFile) {
         audioToTranscribe = selectedFile;
+        fileName = selectedFile.name;
       }
 
       if (!audioToTranscribe) return;
 
-      setIsTranscribing(true);
+      setIsUploading(true);
+      setUploadProgress(0);
       onTranscriptionChange("", true, "");
 
       try {
-        const formData = new FormData();
-        formData.append("audio", audioToTranscribe, "audio.webm");
+        // Step 1: Upload to Vercel Blob
+        console.log('Uploading audio file to Vercel Blob...');
+        const blob = await upload(fileName, audioToTranscribe, {
+          access: 'public',
+          handleUploadUrl: '/api/upload-audio',
+          onUploadProgress: (progress) => {
+            setUploadProgress(Math.round(progress.percentage));
+          },
+        });
 
+        console.log('Upload completed, blob URL:', blob.url);
+        setIsUploading(false);
+        setIsTranscribing(true);
+
+        // Step 2: Transcribe using the blob URL
         const transcribeResponse = await fetch("/api/transcribe", {
           method: "POST",
-          body: formData,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ audioUrl: blob.url }),
         });
 
         const result = await transcribeResponse.json();
@@ -113,11 +135,22 @@ const AudioInput = forwardRef<AudioInputRef, AudioInputProps>(
           onTranscriptionChange("", false, errorMsg);
         }
       } catch (error) {
-        const errorMsg = "Failed to transcribe audio. Please try again.";
+        console.error("Upload/Transcription error:", error);
+        let errorMsg = "Failed to process audio. Please try again.";
+        
+        if (error instanceof Error) {
+          if (error.message.includes('upload')) {
+            errorMsg = "Failed to upload audio file. Please try again.";
+          } else if (error.message.includes('transcribe')) {
+            errorMsg = "Failed to transcribe audio. Please try again.";
+          }
+        }
+        
         onTranscriptionChange("", false, errorMsg);
-        console.error("Transcription error:", error);
       } finally {
+        setIsUploading(false);
         setIsTranscribing(false);
+        setUploadProgress(0);
       }
     };
 
@@ -295,14 +328,19 @@ const AudioInput = forwardRef<AudioInputRef, AudioInputProps>(
             <div className="flex gap-2 ml-auto">
               <button
                 onClick={handleTranscribe}
-                disabled={isTranscribing}
+                disabled={isTranscribing || isUploading}
                 className={`px-4 py-2 text-white rounded-lg font-medium transition-colors ${
-                  isTranscribing
+                  isTranscribing || isUploading
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-green-500 hover:bg-green-600"
                 }`}
               >
-                {isTranscribing ? "Transkriberer..." : "Transkriber"}
+                {isUploading 
+                  ? `Laster opp... ${uploadProgress}%` 
+                  : isTranscribing 
+                  ? "Transkriberer..." 
+                  : "Transkriber"
+                }
               </button>
 
               {activeTab === "record" && (
